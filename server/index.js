@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { initializeVectorStore } from "./langchain/vectorStore.js";
 import { handleChatQuery } from "./langchain/chains.js";
+import { getWeatherForCity, getWeatherForecast } from "./services/weatherService.js";
 
 // Get directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -49,6 +50,57 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Weather API endpoint (current weather only)
+app.get("/api/weather/:cityName", async (req, res) => {
+  try {
+    const { cityName } = req.params;
+
+    if (!cityName) {
+      return res.status(400).json({ error: "City name is required" });
+    }
+
+    console.log(`🌤️  Weather request for: ${cityName}`);
+
+    const weatherData = await getWeatherForCity(cityName);
+
+    res.json(weatherData);
+  } catch (error) {
+    console.error("❌ Error fetching weather:", error);
+    res.status(500).json({
+      error: "Failed to fetch weather data",
+      details: error.message,
+    });
+  }
+});
+
+// Weather forecast API endpoint (with date range)
+app.get("/api/weather/:cityName/forecast", async (req, res) => {
+  try {
+    const { cityName } = req.params;
+    const { startDate, endDate } = req.query;
+
+    if (!cityName) {
+      return res.status(400).json({ error: "City name is required" });
+    }
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({ error: "Start date and end date are required" });
+    }
+
+    console.log(`📅 Forecast request for: ${cityName} (${startDate} to ${endDate})`);
+
+    const forecastData = await getWeatherForecast(cityName, startDate, endDate);
+
+    res.json(forecastData);
+  } catch (error) {
+    console.error("❌ Error fetching forecast:", error);
+    res.status(500).json({
+      error: "Failed to fetch forecast data",
+      details: error.message,
+    });
+  }
+});
+
 // Main chat endpoint
 app.post("/api/chat", async (req, res) => {
   try {
@@ -68,9 +120,21 @@ app.post("/api/chat", async (req, res) => {
     console.log("📋 User preferences:", userPreferences);
     console.log("🔄 Raw Context:", JSON.stringify(context, null, 2));
 
+    // Transform frontend preferences to match backend expectations
+    const transformedPreferences = userPreferences ? {
+      vibe: userPreferences.selectedVibe,  // Map selectedVibe → vibe
+      departureCity: userPreferences.departureCity,
+      budget: userPreferences.budget,
+      interests: userPreferences.interests || [],
+      startDate: userPreferences.startDate,
+      endDate: userPreferences.endDate
+    } : {};
+
+    console.log("🔄 Transformed preferences:", transformedPreferences);
+
     // Build context object for the chain
     const fullContext = {
-      userPreferences: userPreferences || {},
+      userPreferences: transformedPreferences,
       selectedDestination: context?.selectedDestination || null,
       hasSeenItinerary: context?.hasSeenItinerary || false
     };

@@ -1,0 +1,52 @@
+{
+  "Gokarna": {
+    "lat": 14.5489,
+    "lon": 74.3197,
+    "state": "Karnataka"
+  },
+  "Coorg": {
+    "lat": 12.4244,
+    "lon": 75.7382,
+    "state": "Karnataka"
+  },
+  "Pondicherry": {
+    "lat": 11.9416,
+    "lon": 79.8083,
+    "state": "Puducherry"
+  },
+  "Udaipur": {
+    "lat": 24.5854,
+    "lon": 73.7125,
+    "state": "Rajasthan"
+  },
+  "Rishikesh": {
+    "lat": 30.0869,
+    "lon": 78.2676,
+    "state": "Uttarakhand"
+  },
+  "Andaman": {
+    "lat": 11.6234,
+    "lon": 92.7265,
+    "state": "Andaman and Nicobar Islands"
+  },
+  "Alleppey": {
+    "lat": 9.4981,
+    "lon": 76.3388,
+    "state": "Kerala"
+  },
+  "Kasol": {
+    "lat": 32.0103,
+    "lon": 77.3150,
+    "state": "Himachal Pradesh"
+  },
+  "Lonavala": {
+    "lat": 18.7534,
+    "lon": 73.4064,
+    "state": "Maharashtra"
+  },
+  "Munnar": {
+    "lat": 10.0889,
+    "lon": 77.0595,
+    "state": "Kerala"
+  }
+}

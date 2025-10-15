@@ -1,4 +1,5 @@
 import { Check, MapPin, Clock, Wallet, Sparkles } from 'lucide-react';
+import WeatherWidget from './WeatherWidget';
 
 const DestinationComparisonCard = ({ destination, onSelect, isTopPick }) => {
   // Determine match score color
@@ -93,6 +94,11 @@ const DestinationComparisonCard = ({ destination, onSelect, isTopPick }) => {
         <p className="text-xs text-text-secondary">
           <span className="font-medium">Best Time:</span> {destination.bestTimeToVisit}
         </p>
+      </div>
+
+      {/* Current Weather */}
+      <div className="mb-3">
+        <WeatherWidget cityName={destination.name} compact={true} />
       </div>
 
       {/* Choose Button */}

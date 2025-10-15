@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Download, Share2, FileText, File } from 'lucide-react';
 import { parseItinerary } from '../utils/itineraryParser';
 import ItineraryHero from './itinerary/ItineraryHero';
 import ItineraryOverview from './itinerary/ItineraryOverview';
@@ -7,15 +7,20 @@ import DaySection from './itinerary/DaySection';
 import BudgetCard from './itinerary/BudgetCard';
 import HiddenGemsGrid from './itinerary/HiddenGemsGrid';
 import TipsSection from './itinerary/TipsSection';
+import WeatherWidget from './WeatherWidget';
+import { exportToPDF, exportToWord, shareItinerary } from '../utils/exportUtils';
 
 const DetailedItineraryView = ({
   itinerary,
   onBack,
   onChatMessage,
   chatMessages,
-  isLoadingChat
+  isLoadingChat,
+  userPreferences
 }) => {
   const [chatInput, setChatInput] = useState('');
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [exportStatus, setExportStatus] = useState('');
   const chatEndRef = useRef(null);
 
   // Auto-scroll chat to bottom when new messages arrive
@@ -45,6 +50,53 @@ const DetailedItineraryView = ({
     }
   };
 
+  // Export handlers
+  const handleExportPDF = async () => {
+    setExportStatus('Generating PDF...');
+    try {
+      await exportToPDF(itinerary.content, itinerary.destination, userPreferences);
+      setExportStatus('PDF downloaded successfully!');
+      setTimeout(() => setExportStatus(''), 3000);
+    } catch (error) {
+      setExportStatus('Error generating PDF');
+      setTimeout(() => setExportStatus(''), 3000);
+    }
+    setShowExportMenu(false);
+  };
+
+  const handleExportWord = async () => {
+    setExportStatus('Generating Word document...');
+    try {
+      await exportToWord(itinerary.content, itinerary.destination, userPreferences);
+      setExportStatus('Word document downloaded successfully!');
+      setTimeout(() => setExportStatus(''), 3000);
+    } catch (error) {
+      setExportStatus('Error generating Word document');
+      setTimeout(() => setExportStatus(''), 3000);
+    }
+    setShowExportMenu(false);
+  };
+
+  const handleShare = async () => {
+    setExportStatus('Sharing...');
+    try {
+      const result = await shareItinerary(itinerary.content, itinerary.destination, userPreferences);
+      if (result.success) {
+        if (result.fallback === 'copied') {
+          setExportStatus('Itinerary copied to clipboard!');
+        } else {
+          setExportStatus('Shared successfully!');
+        }
+      } else {
+        setExportStatus(result.error || 'Sharing failed');
+      }
+      setTimeout(() => setExportStatus(''), 3000);
+    } catch (error) {
+      setExportStatus('Error sharing itinerary');
+      setTimeout(() => setExportStatus(''), 3000);
+    }
+  };
+
   const suggestedQuestions = [
     "What are the best vegetarian restaurants?",
     "Can you suggest budget-friendly hotels?",
@@ -69,6 +121,58 @@ const DetailedItineraryView = ({
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
             <span>Back to Options</span>
           </button>
+
+          {/* Export and Share Buttons */}
+          <div className="flex items-center gap-2 relative">
+            {/* Export Status Message */}
+            {exportStatus && (
+              <div className="absolute right-0 top-12 bg-primary text-white px-4 py-2 rounded-lg shadow-lg text-sm whitespace-nowrap animate-fadeIn">
+                {exportStatus}
+              </div>
+            )}
+
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-medium hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              aria-label="Share itinerary"
+            >
+              <Share2 className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Share</span>
+            </button>
+
+            {/* Export Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-secondary to-accent text-white rounded-lg font-medium hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
+                aria-label="Export itinerary"
+              >
+                <Download className="w-4 h-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Export</span>
+              </button>
+
+              {/* Export Menu */}
+              {showExportMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border-2 border-neutral-light z-30 animate-fadeIn">
+                  <button
+                    onClick={handleExportPDF}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary/10 transition-colors text-text-primary border-b border-neutral-light"
+                  >
+                    <FileText className="w-4 h-4 text-primary" aria-hidden="true" />
+                    <span className="font-medium">Export as PDF</span>
+                  </button>
+                  <button
+                    onClick={handleExportWord}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-secondary/10 transition-colors text-text-primary"
+                  >
+                    <File className="w-4 h-4 text-secondary" aria-hidden="true" />
+                    <span className="font-medium">Export as Word</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -78,6 +182,15 @@ const DetailedItineraryView = ({
           destination={itinerary.destination}
           imageUrl={heroImageUrl}
         />
+
+        {/* Weather Widget */}
+        <div className="mb-8 animate-fadeIn">
+          <WeatherWidget
+            cityName={itinerary.destination}
+            startDate={userPreferences?.startDate}
+            endDate={userPreferences?.endDate}
+          />
+        </div>
 
         {/* Overview Section */}
         {parsedItinerary.whyVisit && parsedItinerary.whereToStay.name && (
