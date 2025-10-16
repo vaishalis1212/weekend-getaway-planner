@@ -21,6 +21,10 @@ function ChatInterface() {
   const [destinationChatMessages, setDestinationChatMessages] = useState([])
   const [isLoadingChat, setIsLoadingChat] = useState(false)
 
+  // Chat state (for comparison view)
+  const [comparisonChatMessages, setComparisonChatMessages] = useState([])
+  const [isLoadingComparisonChat, setIsLoadingComparisonChat] = useState(false)
+
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = () => {
@@ -69,8 +73,10 @@ function ChatInterface() {
   }, []); // Run only on mount
 
   // Send message to backend
-  const handleSendMessage = async (message, preferences = userPreferences, isChat = false) => {
-    if (isChat) {
+  const handleSendMessage = async (message, preferences = userPreferences, isChat = false, isComparisonChat = false) => {
+    if (isChat && isComparisonChat) {
+      setIsLoadingComparisonChat(true)
+    } else if (isChat) {
       setIsLoadingChat(true)
     } else {
       setIsLoading(true)
@@ -102,13 +108,22 @@ function ChatInterface() {
         setViewMode('comparison')
         setComparisonData(data)
 
-        const aiMessage = {
-          text: data.message || 'Here are your top destination matches!',
-          isUser: false,
-          timestamp: data.timestamp,
-          type: 'comparison'
+        // If this is comparison chat, add to comparison chat messages
+        if (isComparisonChat) {
+          setComparisonChatMessages(prev => [
+            ...prev,
+            { role: 'user', content: message },
+            { role: 'assistant', content: data.message || 'Here are your updated destination matches!' }
+          ])
+        } else {
+          const aiMessage = {
+            text: data.message || 'Here are your top destination matches!',
+            isUser: false,
+            timestamp: data.timestamp,
+            type: 'comparison'
+          }
+          setMessages(prev => [...prev, aiMessage])
         }
-        setMessages(prev => [...prev, aiMessage])
 
       } else if (data.mode === 'detailed') {
         setViewMode('detailed')
@@ -125,18 +140,62 @@ function ChatInterface() {
         }
         setMessages(prev => [...prev, aiMessage])
 
+      } else if (data.mode === 'preferences_needed') {
+        // Bot is asking for missing preferences
+        // Update preferences if partial preferences are provided
+        if (data.partialPreferences) {
+          setUserPreferences(data.partialPreferences)
+        }
+
+        // Add bot message asking for preferences
+        if (isChat && isComparisonChat) {
+          setComparisonChatMessages(prev => [
+            ...prev,
+            { role: 'user', content: message },
+            { role: 'assistant', content: data.message }
+          ])
+        } else if (isChat) {
+          setDestinationChatMessages(prev => [
+            ...prev,
+            { role: 'user', content: message },
+            { role: 'assistant', content: data.message }
+          ])
+        } else {
+          const aiMessage = {
+            text: data.message,
+            isUser: false,
+            timestamp: data.timestamp || new Date().toISOString(),
+            type: 'preferences_request'
+          }
+          setMessages(prev => [...prev, aiMessage])
+        }
+
       } else if (data.mode === 'chat') {
         // Contextual chat response
-        setDestinationChatMessages(prev => [
-          ...prev,
-          { role: 'user', content: message },
-          { role: 'assistant', content: data.message }
-        ])
+        if (isComparisonChat) {
+          setComparisonChatMessages(prev => [
+            ...prev,
+            { role: 'user', content: message },
+            { role: 'assistant', content: data.message }
+          ])
+        } else {
+          setDestinationChatMessages(prev => [
+            ...prev,
+            { role: 'user', content: message },
+            { role: 'assistant', content: data.message }
+          ])
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error)
 
-      if (isChat) {
+      if (isChat && isComparisonChat) {
+        setComparisonChatMessages(prev => [
+          ...prev,
+          { role: 'user', content: message },
+          { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }
+        ])
+      } else if (isChat) {
         setDestinationChatMessages(prev => [
           ...prev,
           { role: 'user', content: message },
@@ -152,7 +211,9 @@ function ChatInterface() {
         setMessages(prev => [...prev, errorMessage])
       }
     } finally {
-      if (isChat) {
+      if (isChat && isComparisonChat) {
+        setIsLoadingComparisonChat(false)
+      } else if (isChat) {
         setIsLoadingChat(false)
       } else {
         setIsLoading(false)
@@ -190,6 +251,12 @@ function ChatInterface() {
   const handleDestinationChatMessage = async (message) => {
     console.log('Chat message:', message)
     await handleSendMessage(message, userPreferences, true)
+  }
+
+  // Handle chat message in comparison view
+  const handleComparisonChatMessage = async (message) => {
+    console.log('Comparison chat message:', message)
+    await handleSendMessage(message, userPreferences, true, true) // Pass extra flag for comparison mode
   }
 
   // Handle refine search
@@ -230,6 +297,9 @@ function ChatInterface() {
             destinations={comparisonData.destinations}
             onDestinationSelect={handleDestinationSelect}
             onRefine={handleRefineSearch}
+            onChatMessage={handleComparisonChatMessage}
+            chatMessages={comparisonChatMessages}
+            isLoadingChat={isLoadingComparisonChat}
           />
         )}
 

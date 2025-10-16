@@ -22,11 +22,26 @@ const DetailedItineraryView = ({
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exportStatus, setExportStatus] = useState('');
   const chatEndRef = useRef(null);
+  const exportMenuRef = useRef(null);
 
   // Auto-scroll chat to bottom when new messages arrive
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
+
+  // Close export menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    if (showExportMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showExportMenu]);
 
   // Parse itinerary content
   const parsedItinerary = useMemo(() => {
@@ -54,12 +69,17 @@ const DetailedItineraryView = ({
   const handleExportPDF = async () => {
     setExportStatus('Generating PDF...');
     try {
+      console.log('Starting PDF export...', {
+        content: itinerary.content?.substring(0, 100),
+        destination: itinerary.destination
+      });
       await exportToPDF(itinerary.content, itinerary.destination, userPreferences);
       setExportStatus('PDF downloaded successfully!');
       setTimeout(() => setExportStatus(''), 3000);
     } catch (error) {
-      setExportStatus('Error generating PDF');
-      setTimeout(() => setExportStatus(''), 3000);
+      console.error('PDF Export Error:', error);
+      setExportStatus(`Error: ${error.message}`);
+      setTimeout(() => setExportStatus(''), 5000);
     }
     setShowExportMenu(false);
   };
@@ -67,12 +87,17 @@ const DetailedItineraryView = ({
   const handleExportWord = async () => {
     setExportStatus('Generating Word document...');
     try {
+      console.log('Starting Word export...', {
+        content: itinerary.content?.substring(0, 100),
+        destination: itinerary.destination
+      });
       await exportToWord(itinerary.content, itinerary.destination, userPreferences);
       setExportStatus('Word document downloaded successfully!');
       setTimeout(() => setExportStatus(''), 3000);
     } catch (error) {
-      setExportStatus('Error generating Word document');
-      setTimeout(() => setExportStatus(''), 3000);
+      console.error('Word Export Error:', error);
+      setExportStatus(`Error: ${error.message}`);
+      setTimeout(() => setExportStatus(''), 5000);
     }
     setShowExportMenu(false);
   };
@@ -80,6 +105,10 @@ const DetailedItineraryView = ({
   const handleShare = async () => {
     setExportStatus('Sharing...');
     try {
+      console.log('Starting share...', {
+        content: itinerary.content?.substring(0, 100),
+        destination: itinerary.destination
+      });
       const result = await shareItinerary(itinerary.content, itinerary.destination, userPreferences);
       if (result.success) {
         if (result.fallback === 'copied') {
@@ -92,8 +121,9 @@ const DetailedItineraryView = ({
       }
       setTimeout(() => setExportStatus(''), 3000);
     } catch (error) {
-      setExportStatus('Error sharing itinerary');
-      setTimeout(() => setExportStatus(''), 3000);
+      console.error('Share Error:', error);
+      setExportStatus(`Error: ${error.message}`);
+      setTimeout(() => setExportStatus(''), 5000);
     }
   };
 
@@ -142,7 +172,7 @@ const DetailedItineraryView = ({
             </button>
 
             {/* Export Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={exportMenuRef}>
               <button
                 onClick={() => setShowExportMenu(!showExportMenu)}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-secondary to-accent text-white rounded-lg font-medium hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2"
@@ -237,11 +267,10 @@ const DetailedItineraryView = ({
         <div className="border-t-4 border-primary/30 pt-10 pb-20">
           <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-4 flex items-center gap-3">
             <span role="img" aria-label="chat">💬</span>
-            Questions about your {itinerary.destination} trip?
+            Ask me anything
           </h2>
           <p className="text-text-secondary mb-6 text-lg">
-            Ask me anything! I can help with food options, activity modifications, packing advice,
-            or any other questions about your itinerary.
+            I can help with food options, activity modifications, packing advice, any other questions about your itinerary or help you plan another trip - Just say "Plan another trip" and I will assist you!
           </p>
 
           {/* Suggested Questions */}
