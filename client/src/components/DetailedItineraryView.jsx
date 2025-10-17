@@ -183,15 +183,6 @@ const DetailedItineraryView = ({
           imageUrl={heroImageUrl}
         />
 
-        {/* Weather Widget */}
-        <div className="mb-8 animate-fadeIn">
-          <WeatherWidget
-            cityName={itinerary.destination}
-            startDate={userPreferences?.startDate}
-            endDate={userPreferences?.endDate}
-          />
-        </div>
-
         {/* Overview Section */}
         {parsedItinerary.whyVisit && parsedItinerary.whereToStay.name && (
           <ItineraryOverview
@@ -214,6 +205,18 @@ const DetailedItineraryView = ({
             />
           );
         })}
+
+        {/* Weather Forecast for Trip Dates */}
+        {userPreferences?.startDate && userPreferences?.endDate && (
+          <div className="mb-8 animate-fadeIn">
+            <WeatherWidget
+              cityName={itinerary.destination}
+              startDate={userPreferences.startDate}
+              endDate={userPreferences.endDate}
+              compact={false}
+            />
+          </div>
+        )}
 
         {/* Budget Breakdown */}
         {parsedItinerary.budget.length > 0 && (

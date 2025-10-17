@@ -76,119 +76,54 @@ const WeatherWidget = ({ cityName, compact = false, startDate = null, endDate = 
     );
   }
 
-  // Full version for detailed itinerary with forecast
+  // Full version for detailed itinerary - show only forecast if dates provided
+  // Only show forecast when we have start/end dates
+  if (!startDate || !endDate || !forecast || forecast.length === 0) {
+    return null; // Don't show widget if no forecast available
+  }
+
   return (
     <div className="bg-gradient-to-br from-sky-50 via-blue-50 to-indigo-50 dark:from-sky-900/30 dark:via-blue-900/30 dark:to-indigo-900/30 p-6 rounded-xl shadow-md border-2 border-sky-200 dark:border-sky-800">
-      {/* Current Weather Section */}
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-bold text-text-primary mb-1 flex items-center gap-2">
-            <Cloud className="w-5 h-5 text-sky-600" aria-hidden="true" />
-            Current Weather
-          </h3>
-          <p className="text-sm text-text-secondary">Live conditions in {weather.city}</p>
-        </div>
-        <span className="text-5xl" role="img" aria-label={weather.condition}>
-          {getWeatherEmoji(weather.condition)}
-        </span>
+      {/* Forecast Section - Only show trip dates */}
+      <div className="mb-4">
+        <h3 className="text-lg font-bold text-text-primary mb-1 flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-sky-600" aria-hidden="true" />
+          Weather Forecast for Your Trip
+        </h3>
+        <p className="text-sm text-text-secondary">Expected conditions in {weather.city}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        {/* Temperature */}
-        <div className="bg-white/60 dark:bg-black/20 p-4 rounded-lg">
-          <p className="text-3xl font-bold text-primary mb-1">
-            {weather.temp}{weather.tempUnit}
-          </p>
-          <p className="text-xs text-text-secondary">
-            Feels like {weather.feelsLike}{weather.tempUnit}
-          </p>
-          <p className="text-sm font-medium text-text-primary mt-2">{weather.condition}</p>
-          <p className="text-xs text-text-secondary capitalize">{weather.description}</p>
-        </div>
-
-        {/* Additional Info */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 bg-white/60 dark:bg-black/20 p-2 rounded-lg">
-            <Droplets className="w-4 h-4 text-blue-600" aria-hidden="true" />
-            <div>
-              <p className="text-xs text-text-secondary">Humidity</p>
-              <p className="text-sm font-semibold text-text-primary">{weather.humidity}%</p>
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        {forecast.map((day, index) => (
+          <div
+            key={index}
+            className="bg-white/60 dark:bg-black/20 p-3 rounded-lg text-center hover:bg-white/80 dark:hover:bg-black/30 transition-colors"
+          >
+            <p className="text-xs font-semibold text-text-primary mb-1">
+              {formatDate(day.date)}
+            </p>
+            <span className="text-3xl block mb-1" role="img" aria-label={day.condition}>
+              {getWeatherEmoji(day.condition)}
+            </span>
+            <p className="text-sm font-bold text-primary">
+              {day.temp}°C
+            </p>
+            <p className="text-xs text-text-secondary">
+              {day.tempMin}° - {day.tempMax}°
+            </p>
+            <p className="text-xs text-text-secondary capitalize mt-1">
+              {day.condition}
+            </p>
           </div>
-
-          <div className="flex items-center gap-2 bg-white/60 dark:bg-black/20 p-2 rounded-lg">
-            <Wind className="w-4 h-4 text-teal-600" aria-hidden="true" />
-            <div>
-              <p className="text-xs text-text-secondary">Wind Speed</p>
-              <p className="text-sm font-semibold text-text-primary">{weather.windSpeed} km/h</p>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Weather Tip */}
-      <div className="mb-6 p-3 bg-white/60 dark:bg-black/20 rounded-lg">
+      <div className="mt-4 p-3 bg-white/60 dark:bg-black/20 rounded-lg">
         <p className="text-xs text-text-secondary">
-          <span className="font-semibold text-primary">Travel Tip:</span>{' '}
-          {getWeatherTip(weather)}
+          <span className="font-semibold text-primary">Planning Tip:</span>{' '}
+          {getForecastTip(forecast)}
         </p>
       </div>
-
-      {/* Forecast Section */}
-      {startDate && endDate && (
-        <div className="border-t-2 border-sky-200 dark:border-sky-800 pt-4">
-          <h4 className="text-md font-bold text-text-primary mb-3 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-sky-600" aria-hidden="true" />
-            Weather During Your Trip
-          </h4>
-
-          {forecast && forecast.length > 0 ? (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                {forecast.map((day, index) => (
-                  <div
-                    key={index}
-                    className="bg-white/60 dark:bg-black/20 p-3 rounded-lg text-center hover:bg-white/80 dark:hover:bg-black/30 transition-colors"
-                  >
-                    <p className="text-xs font-semibold text-text-primary mb-1">
-                      {formatDate(day.date)}
-                    </p>
-                    <span className="text-3xl block mb-1" role="img" aria-label={day.condition}>
-                      {getWeatherEmoji(day.condition)}
-                    </span>
-                    <p className="text-sm font-bold text-primary">
-                      {day.temp}°C
-                    </p>
-                    <p className="text-xs text-text-secondary">
-                      {day.tempMin}° - {day.tempMax}°
-                    </p>
-                    <p className="text-xs text-text-secondary capitalize mt-1">
-                      {day.condition}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 p-3 bg-white/60 dark:bg-black/20 rounded-lg">
-                <p className="text-xs text-text-secondary">
-                  <span className="font-semibold text-primary">Planning Tip:</span>{' '}
-                  {getForecastTip(forecast)}
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-lg">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                📅 <span className="font-semibold">Forecast Not Available</span>
-                <br />
-                <span className="text-xs">
-                  Weather forecasts are only available for the next 5 days. Your selected travel dates ({formatDate(startDate)} - {formatDate(endDate)}) are beyond this window. Check back closer to your trip for accurate weather predictions!
-                </span>
-              </p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
