@@ -20,5 +20,113 @@
       "alt": "Gokarna - Panoramic aerial view of beach and coastline",
       "location": "Gokarna"
     }
+  },
+  "Coorg": {
+    "default": {
+      "url": "/images/destinations/coorg.jpeg",
+      "alt": "Coorg - Lush coffee plantations and misty hills",
+      "location": "Coorg"
+    },
+    "hero": {
+      "url": "/images/destinations/coorg.jpeg",
+      "alt": "Coorg - Panoramic view of coffee estates and greenery",
+      "location": "Coorg"
+    }
+  },
+  "Pondicherry": {
+    "default": {
+      "url": "/images/destinations/pondicherry.jpeg",
+      "alt": "Pondicherry - French colonial architecture and beaches",
+      "location": "Pondicherry"
+    },
+    "hero": {
+      "url": "/images/destinations/pondicherry.jpeg",
+      "alt": "Pondicherry - Charming French quarter and coastline",
+      "location": "Pondicherry"
+    }
+  },
+  "Udaipur": {
+    "default": {
+      "url": "/images/destinations/udaipur.jpeg",
+      "alt": "Udaipur - City of lakes and palaces",
+      "location": "Udaipur"
+    },
+    "hero": {
+      "url": "/images/destinations/udaipur.jpeg",
+      "alt": "Udaipur - Majestic palaces and Lake Pichola",
+      "location": "Udaipur"
+    }
+  },
+  "Rishikesh": {
+    "default": {
+      "url": "/images/destinations/rishikesh.jpeg",
+      "alt": "Rishikesh - Yoga capital on the banks of Ganges",
+      "location": "Rishikesh"
+    },
+    "hero": {
+      "url": "/images/destinations/rishikesh.jpeg",
+      "alt": "Rishikesh - Spiritual gateway to the Himalayas",
+      "location": "Rishikesh"
+    }
+  },
+  "Lonavala": {
+    "default": {
+      "url": "/images/destinations/lonavala.jpg",
+      "alt": "Lonavala - Scenic hill station with waterfalls",
+      "location": "Lonavala"
+    },
+    "hero": {
+      "url": "/images/destinations/lonavala.jpg",
+      "alt": "Lonavala - Misty valleys and green landscapes",
+      "location": "Lonavala"
+    }
+  },
+  "Alleppey": {
+    "default": {
+      "url": "/images/destinations/alleppey.jpeg",
+      "alt": "Alleppey - Venice of the East with serene backwaters",
+      "location": "Alleppey"
+    },
+    "hero": {
+      "url": "/images/destinations/alleppey.jpeg",
+      "alt": "Alleppey - Tranquil houseboat cruises and backwaters",
+      "location": "Alleppey"
+    }
+  },
+  "Munnar": {
+    "default": {
+      "url": "/images/destinations/munnar.jpeg",
+      "alt": "Munnar - Rolling tea gardens and mountain vistas",
+      "location": "Munnar"
+    },
+    "hero": {
+      "url": "/images/destinations/munnar.jpeg",
+      "alt": "Munnar - Scenic tea plantations in the Western Ghats",
+      "location": "Munnar"
+    }
+  },
+  "Kasol": {
+    "default": {
+      "url": "/images/destinations/kasol.jpeg",
+      "alt": "Kasol - Himalayan village on the Parvati River",
+      "location": "Kasol"
+    },
+    "hero": {
+      "url": "/images/destinations/kasol.jpeg",
+      "alt": "Kasol - Serene mountain retreat in Himachal Pradesh",
+      "location": "Kasol"
+    }
+  },
+  "Andaman": {
+    "default": {
+      "url": "/images/destinations/Andaman.jpeg",
+      "alt": "Andaman - Pristine beaches and turquoise waters",
+      "location": "Andaman Islands"
+    },
+    "hero": {
+      "url": "/images/destinations/Andaman.jpeg",
+      "alt": "Andaman - Tropical paradise with coral reefs",
+      "location": "Andaman Islands"
+    }
   }
 }

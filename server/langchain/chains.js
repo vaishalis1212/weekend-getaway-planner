@@ -55,48 +55,33 @@ function extractDestinationName(message) {
 function isPlanAnotherTrip(message) {
   const lowerMessage = message.toLowerCase();
 
-  // Check for explicit trip planning keywords and phrases
-  const keywords = [
+  // EXPLICIT trip planning phrases - these are strong signals
+  const explicitKeywords = [
     'plan another trip',
     'new trip',
     'different destination',
-    'another destination',
     'plan a trip',
     'plan trip',
     'new getaway',
     'another getaway',
-    'different place',
-    'somewhere else',
-    'plan for',
-    'i want to go to',
-    'i want to go',
-    'i want to visit',
-    'want to go to',
-    'want to visit',
-    'take me to',
-    'looking for',
     'help me plan',
     'help me create',
-    'help me with',
     'create itinerary',
     'create a plan',
-    'make a plan',
-    'suggest',
-    'show me'
+    'make a plan'
   ];
 
-  // Check if message contains any of the keywords
-  if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+  // Check for explicit phrases first
+  if (explicitKeywords.some(keyword => lowerMessage.includes(keyword))) {
     return true;
   }
 
   // Check various patterns for trip planning intent
   const patterns = [
     /^(plan|planning)\s+(a\s+)?(\w+\s+)?trip/i,                    // "plan a trip", "planning udaipur trip"
-    /^(help|assist)\s+(me\s+)?(plan|create|make|with)/i,           // "help me plan", "help create itinerary"
+    /^(help|assist)\s+(me\s+)?(plan|create|make)/i,                // "help me plan", "help create itinerary"
     /(create|make|build|generate)\s+(an?\s+)?(itinerary|plan)/i,  // "create an itinerary", "make a plan"
     /^(what about|how about)\s+\w+/i,                               // "what about Gokarna", "how about Udaipur"
-    /^(suggest|recommend|show)\s+(me\s+)?(\w+\s+)?(for|to)?/i,    // "suggest places", "recommend destination"
     /(trip|visit|travel)\s+to\s+\w+/i                               // "trip to Udaipur", "travel to Coorg"
   ];
 
@@ -300,6 +285,56 @@ function calculateMatchScore(destination, userPreferences) {
   return Math.min(score, 100);
 }
 
+// Helper function to generate context-aware chat response messages
+function generateComparisonMessage(userMessage, topDestinations, userPreferences) {
+  const destinationNames = topDestinations.map(d => d.name).join(', ');
+  const messageLower = userMessage.toLowerCase();
+
+  // Budget adjustment
+  if (messageLower.includes('budget') || messageLower.includes('₹') || messageLower.includes('rs')) {
+    const budgetMatch = userMessage.match(/₹?\s?(\d+,?\d*)/);
+    if (budgetMatch) {
+      return `Great! I've found ${topDestinations.length} destinations that fit your budget. Check them out above!`;
+    }
+    return `I've updated the recommendations based on your budget preferences. Here are ${topDestinations.length} great options!`;
+  }
+
+  // Other suggestions / alternatives
+  if (messageLower.includes('other') || messageLower.includes('more') || messageLower.includes('different') ||
+      messageLower.includes('alternative') || messageLower.includes('else')) {
+    return `Here are ${topDestinations.length} more amazing destinations for you: ${destinationNames}. Each one offers something unique!`;
+  }
+
+  // Can't see results / where are results
+  if (messageLower.includes('don\'t see') || messageLower.includes('cant see') || messageLower.includes('can\'t see') ||
+      messageLower.includes('where') || messageLower.includes('show me') || messageLower.includes('no result')) {
+    return `I found ${topDestinations.length} perfect destinations for you! You can see ${destinationNames} above. Click on any card to explore more details!`;
+  }
+
+  // Same details / preferences
+  if (messageLower.includes('same') || messageLower.includes('as before') || messageLower.includes('previous')) {
+    const vibeText = userPreferences.vibe ? ` for your ${userPreferences.vibe} getaway` : '';
+    const cityText = userPreferences.departureCity ? ` from ${userPreferences.departureCity}` : '';
+    return `Perfect! Based on your preferences${vibeText}${cityText}, here are your top ${topDestinations.length} matches: ${destinationNames}`;
+  }
+
+  // Vibe-specific queries
+  if (messageLower.includes('beach') || messageLower.includes('mountain') || messageLower.includes('heritage') ||
+      messageLower.includes('spiritual') || messageLower.includes('nature')) {
+    return `I've found ${topDestinations.length} destinations perfect for your vibe! Check out ${destinationNames} above.`;
+  }
+
+  // Plan another trip (initial request)
+  if (messageLower.includes('plan') && messageLower.includes('trip')) {
+    return `I'd love to help you plan another trip! I've prepared ${topDestinations.length} wonderful destinations based on your preferences. Take a look at ${destinationNames} above!`;
+  }
+
+  // Default message with more context
+  const vibeText = userPreferences.vibe ? ` for your ${userPreferences.vibe} getaway` : '';
+  const cityText = userPreferences.departureCity ? ` from ${userPreferences.departureCity}` : '';
+  return `Based on your preferences${vibeText}${cityText}, here are your top ${topDestinations.length} matches: ${destinationNames}!`;
+}
+
 // COMPARISON CHAIN
 export async function createComparisonChain(userMessage, userPreferences = {}) {
   console.log('🔍 Creating comparison for preferences:', userPreferences);
@@ -330,10 +365,13 @@ export async function createComparisonChain(userMessage, userPreferences = {}) {
 
   console.log(`✅ Found ${topDestinations.length} matching destinations`);
 
+  // Generate context-aware message
+  const contextualMessage = generateComparisonMessage(userMessage, topDestinations, userPreferences);
+
   // Format response
   const comparisonResponse = {
     mode: "comparison",
-    message: "Based on your preferences, here are your top matches:",
+    message: contextualMessage,
     destinations: topDestinations.map(dest => ({
       name: dest.name,
       tagline: dest.tagline,
