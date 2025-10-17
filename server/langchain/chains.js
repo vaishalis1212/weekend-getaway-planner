@@ -16,6 +16,11 @@ const comparisonData = JSON.parse(
   fs.readFileSync(path.join(__dirname, '../data/destinations_comparison.json'), 'utf-8')
 );
 
+// Load destination images
+const destinationImages = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../data/destination_images.json'), 'utf-8')
+);
+
 // Initialize the LLM (lazily, so env vars are loaded)
 function getLLM() {
   return new ChatOpenAI({
@@ -173,39 +178,113 @@ export async function createDetailedItineraryChain(userMessage, destinationName)
   // Create enhanced query for better RAG retrieval
   const enhancedQuery = `${userMessage} ${destinationName} complete itinerary romantic couples`;
 
-  // Optimized prompt template - reduced token count
-  const DETAILED_PROMPT_TEMPLATE = `You are creating a weekend itinerary for ${destinationName}.
+  // Detailed prompt template with structured format (no tables)
+  const DETAILED_PROMPT_TEMPLATE = `You are creating a comprehensive weekend itinerary for ${destinationName}.
 
 DESTINATION INFO:
 {context}
 
 USER REQUEST: {query}
 
-Create a concise, actionable itinerary with:
+Create a detailed, actionable itinerary following this EXACT structure (no tables, use this format):
+
+---START FORMAT---
 
 ## ${destinationName} - Weekend Itinerary
 
-**Why Visit:** 1-2 sentence summary
+**Why Visit:**
+Write 2-3 sentences explaining what makes this destination special and perfect for couples.
 
-**2-Day Plan:**
-| Day | Time | Activity | Details | Cost |
-|-----|------|----------|---------|------|
-[Fill 6-8 key activities across 2 days]
+**Where to Stay:**
+[Hotel Name] - ₹[Price] per night
+[2-3 sentences about the hotel, amenities, and why it's perfect for couples]
+
+**Day 1: [Theme like "Beach Exploration" or "Arrival & Relaxation"]**
+
+ACTIVITY: Arrival & Check-in
+TIME: 8:00 AM
+DETAILS: Arrive in Gokarna and check into [Hotel Name]. Freshen up and get ready to explore.
+COST: ₹0
+ICON: 🏨
+
+ACTIVITY: Breakfast at [Restaurant Name]
+TIME: 9:00 AM
+DETAILS: Enjoy a hearty breakfast with options like pancakes, fresh fruit, and local delicacies.
+COST: ₹700
+ICON: 🍽️
+
+ACTIVITY: Om Beach Visit
+TIME: 10:00 AM
+DETAILS: Walk to Om Beach, shaped like the Om symbol. Relax on soft sands and swim in calm waters.
+COST: ₹0
+ICON: 🏖️
+
+[Continue with 4-5 more activities for Day 1]
+
+**Day 2: [Theme like "Cultural & Scenic Exploration"]**
+
+ACTIVITY: [Activity Name]
+TIME: [Time]
+DETAILS: [Detailed description]
+COST: ₹[Amount]
+ICON: [Emoji - use 🍽️ for food, 🏖️ for beach, 🛕 for temples, 🚶 for walks, 🌅 for sunset, 🎨 for cultural, 🧘 for yoga/wellness]
+
+[Continue with 4-5 activities for Day 2]
 
 **Budget Breakdown:**
-| Category | Details | Cost |
-|----------|---------|------|
-| Transport | | ₹X |
-| Stay | | ₹Y |
-| Food | | ₹Z |
-| Activities | | ₹A |
-| **Total** | | **₹XYZ** |
 
-**Hidden Gems:** List 3 romantic spots
+CATEGORY: Transport
+DETAILS: Train/bus from [City] + local auto/bike rentals
+AMOUNT: ₹4,000
 
-**Tips:** Best time, what to pack (1-2 sentences)
+CATEGORY: Accommodation
+DETAILS: [Hotel Name] - 2 nights
+AMOUNT: ₹7,000
 
-Keep it brief, specific, and romantic for couples. Use actual names and prices from context.`;
+CATEGORY: Food
+DETAILS: 6 meals at local restaurants and beach shacks
+AMOUNT: ₹4,200
+
+CATEGORY: Activities
+DETAILS: Beach activities, temple visits, boat rides
+AMOUNT: ₹2,000
+
+TOTAL: ₹17,200
+
+**Hidden Gems:**
+
+GEM: [Place Name]
+DESCRIPTION: [2-3 sentences about this hidden gem and why couples will love it]
+
+GEM: [Place Name]
+DESCRIPTION: [Description]
+
+[3-4 hidden gems total]
+
+**Practical Tips:**
+
+BEST TIME: [Months and why]
+
+PACKING ESSENTIALS:
+- Swimwear and beach clothes
+- Sunscreen and sunglasses
+- Light cotton clothes
+- Comfortable walking shoes
+- Camera for sunset shots
+[Add 3-5 more specific items]
+
+LOCAL TRANSPORT: [Tips about getting around]
+
+BOOKING TIPS: [Any advance booking recommendations]
+
+---END FORMAT---
+
+IMPORTANT:
+- Follow this EXACT format with ACTIVITY:, TIME:, DETAILS:, COST:, ICON: labels
+- Use specific names from the destination info
+- Include packing essentials list
+- Target 1200-1500 tokens
+- Use appropriate emoji icons for each activity type`;
 
   const prompt = PromptTemplate.fromTemplate(DETAILED_PROMPT_TEMPLATE);
 
@@ -228,12 +307,21 @@ Keep it brief, specific, and romantic for couples. Use actual names and prices f
 
   console.log(`✅ Generated detailed itinerary for ${destinationName}`);
 
-  // Return with mode metadata
-  return {
+  // Get images for this destination
+  const destinationImageData = destinationImages[destinationName] || {};
+  console.log(`📸 Images for ${destinationName}:`, JSON.stringify(destinationImageData, null, 2));
+
+  // Return with mode metadata and images
+  const response = {
     mode: "detailed",
     destination: destinationName,
-    content: result
+    content: result,
+    images: destinationImageData
   };
+
+  console.log(`📦 Sending response with images:`, response.images ? 'YES' : 'NO');
+
+  return response;
 }
 
 // CONTEXTUAL CHAT CHAIN (for follow-up questions about specific destination)

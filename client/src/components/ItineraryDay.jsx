@@ -1,8 +1,41 @@
 import { Clock, MapPin } from 'lucide-react';
+import { useState } from 'react';
 
 const ItineraryDay = ({ day }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   return (
     <div className="bg-surface rounded-xl shadow-md border-2 border-neutral-light overflow-hidden hover:shadow-lg transition-shadow">
+      {/* Hero Image */}
+      {day.image && !imageError && (
+        <div className="relative w-full h-64 bg-neutral-light overflow-hidden">
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-neutral-light animate-pulse flex items-center justify-center">
+              <span className="text-text-secondary">Loading image...</span>
+            </div>
+          )}
+          <img
+            src={day.image.url}
+            alt={day.image.alt || `Day ${day.dayNumber} destination`}
+            className={`w-full h-full object-cover transition-opacity duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageError(true)}
+          />
+          {/* Image Overlay with Location */}
+          {imageLoaded && day.image.location && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+              <div className="flex items-center gap-2 text-white">
+                <MapPin className="w-4 h-4" aria-hidden="true" />
+                <span className="text-sm font-medium">{day.image.location}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Day Header */}
       <div className="bg-gradient-to-r from-primary to-secondary text-white px-6 py-4">
         <h3 className="text-xl font-bold">{day.title || `Day ${day.dayNumber}`}</h3>

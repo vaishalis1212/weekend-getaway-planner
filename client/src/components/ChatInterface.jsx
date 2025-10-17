@@ -49,6 +49,25 @@ function ChatInterface() {
     await handleSendMessage(query, preferences)
   }
 
+  // Check for wizard data from Hero2Demo on mount
+  useEffect(() => {
+    const storedWizardData = sessionStorage.getItem('wizardData');
+    if (storedWizardData) {
+      try {
+        const { query, preferences } = JSON.parse(storedWizardData);
+        console.log('Found stored wizard data:', { query, preferences });
+        // Clear the stored data
+        sessionStorage.removeItem('wizardData');
+        // Process the wizard completion
+        handleWizardComplete(query, preferences);
+      } catch (error) {
+        console.error('Error parsing stored wizard data:', error);
+        sessionStorage.removeItem('wizardData');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only on mount
+
   // Send message to backend
   const handleSendMessage = async (message, preferences = userPreferences, isChat = false) => {
     if (isChat) {
@@ -190,6 +209,7 @@ function ChatInterface() {
       {messages.length === 0 && showWizard && (
         <PreferenceWizard
           onComplete={handleWizardComplete}
+          onClose={() => window.location.href = '/?demo=hero2'}
         />
       )}
 
@@ -197,6 +217,7 @@ function ChatInterface() {
       {messages.length > 0 && showWizard && (
         <PreferenceWizard
           onComplete={handleWizardComplete}
+          onClose={() => window.location.href = '/?demo=hero2'}
         />
       )}
 
@@ -204,7 +225,7 @@ function ChatInterface() {
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto">
         {/* Comparison View */}
-        {viewMode === 'comparison' && comparisonData && !showWizard && (
+        {viewMode === 'comparison' && comparisonData && !showWizard && !isLoading && (
           <ComparisonView
             destinations={comparisonData.destinations}
             onDestinationSelect={handleDestinationSelect}

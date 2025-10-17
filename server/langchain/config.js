@@ -70,7 +70,7 @@ Use your existing detailed format with specific restaurant names, exact costs, t
 export const MODEL_CONFIG = {
   modelName: "gpt-4o-mini",
   temperature: 0.7, // Higher = more creative, Lower = more focused
-  maxTokens: 1000, // Reduced from 2000 for faster generation
+  maxTokens: 1500, // Increased for more detailed itineraries with hotel names
 };
 
 // Vector store settings

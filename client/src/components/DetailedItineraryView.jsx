@@ -1,7 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ArrowLeft, Send } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { parseItinerary } from '../utils/itineraryParser';
+import ItineraryHero from './itinerary/ItineraryHero';
+import ItineraryOverview from './itinerary/ItineraryOverview';
+import DaySection from './itinerary/DaySection';
+import BudgetCard from './itinerary/BudgetCard';
+import HiddenGemsGrid from './itinerary/HiddenGemsGrid';
+import TipsSection from './itinerary/TipsSection';
 
 const DetailedItineraryView = ({
   itinerary,
@@ -17,6 +22,14 @@ const DetailedItineraryView = ({
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
+
+  // Parse itinerary content
+  const parsedItinerary = useMemo(() => {
+    console.log('Parsing itinerary content:', itinerary.content);
+    const parsed = parseItinerary(itinerary.content || '');
+    console.log('Parsed result:', parsed);
+    return parsed;
+  }, [itinerary.content]);
 
   const handleSendMessage = () => {
     if (chatInput.trim()) {
@@ -40,6 +53,9 @@ const DetailedItineraryView = ({
     "What time should I visit the temple?"
   ];
 
+  // Get hero image (prioritize hero image, fallback to default)
+  const heroImageUrl = itinerary.images?.hero?.url || itinerary.images?.default?.url || 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80';
+
   return (
     <div className="w-full bg-background min-h-screen">
       {/* Sticky Header */}
@@ -57,40 +73,49 @@ const DetailedItineraryView = ({
       </div>
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-        {/* Hero Section */}
-        <div className="bg-warm-gradient text-white p-8 md:p-10 rounded-2xl shadow-xl mb-8 animate-fadeIn">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3 flex items-center gap-3">
-            <span role="img" aria-label="sparkles">✨</span>
-            Your {itinerary.destination} Weekend Itinerary
-          </h1>
-          <p className="text-lg opacity-95">
-            Everything you need for an amazing getaway!
-          </p>
-        </div>
+        {/* Hero Image */}
+        <ItineraryHero
+          destination={itinerary.destination}
+          imageUrl={heroImageUrl}
+        />
 
-        {/* Itinerary Content */}
-        <div className="bg-surface rounded-xl shadow-md border-2 border-neutral-light p-6 md:p-8 mb-10">
-          <div className="prose prose-sm max-w-none
-            prose-headings:text-secondary prose-headings:font-bold
-            prose-strong:text-text-primary prose-strong:font-semibold
-            prose-p:text-text-secondary prose-p:leading-relaxed
-            prose-li:text-text-secondary
-            prose-table:border-collapse prose-table:w-full
-            prose-th:bg-gradient-to-r prose-th:from-secondary/10 prose-th:to-primary/10
-            prose-th:text-text-primary prose-th:font-bold prose-th:border-2 prose-th:border-neutral prose-th:p-3
-            prose-td:border prose-td:border-neutral-light prose-td:p-3 prose-td:text-text-secondary
-            prose-tr:hover:bg-primary/5 prose-tr:transition-colors
-            prose-a:text-primary prose-a:underline hover:prose-a:text-primary-dark focus:prose-a:ring-2 focus:prose-a:ring-primary
-            prose-code:text-secondary prose-code:bg-secondary/10 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-            prose-blockquote:border-l-4 prose-blockquote:border-accent prose-blockquote:bg-accent/5 prose-blockquote:italic
-            prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4
-            prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3
-          ">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {itinerary.content}
-            </ReactMarkdown>
-          </div>
-        </div>
+        {/* Overview Section */}
+        {parsedItinerary.whyVisit && parsedItinerary.whereToStay.name && (
+          <ItineraryOverview
+            whyVisit={parsedItinerary.whyVisit}
+            whereToStay={parsedItinerary.whereToStay}
+          />
+        )}
+
+        {/* Day Sections */}
+        {parsedItinerary.days.map((day, index) => {
+          const dayNumber = index + 1;
+          const dayImageKey = `day${dayNumber}`;
+          const dayImage = itinerary.images?.[dayImageKey];
+
+          return (
+            <DaySection
+              key={index}
+              day={day}
+              dayImage={dayImage}
+            />
+          );
+        })}
+
+        {/* Budget Breakdown */}
+        {parsedItinerary.budget.length > 0 && (
+          <BudgetCard budgetItems={parsedItinerary.budget} />
+        )}
+
+        {/* Hidden Gems */}
+        {parsedItinerary.hiddenGems.length > 0 && (
+          <HiddenGemsGrid gems={parsedItinerary.hiddenGems} />
+        )}
+
+        {/* Practical Tips */}
+        {parsedItinerary.tips.length > 0 && (
+          <TipsSection tips={parsedItinerary.tips} />
+        )}
 
         {/* CHAT SECTION */}
         <div className="border-t-4 border-primary/30 pt-10 pb-20">
@@ -102,6 +127,24 @@ const DetailedItineraryView = ({
             Ask me anything! I can help with food options, activity modifications, packing advice,
             or any other questions about your itinerary.
           </p>
+
+          {/* Suggested Questions */}
+          {chatMessages.length === 0 && (
+            <div className="mb-6">
+              <p className="text-sm font-medium text-text-secondary mb-3">Try asking:</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestedQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setChatInput(question)}
+                    className="text-xs px-3 py-2 bg-primary/5 text-primary rounded-lg hover:bg-primary/10 transition-colors border border-primary/20"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Chat History */}
           <div className="bg-surface rounded-xl border-2 border-neutral-light shadow-sm mb-6">
@@ -159,7 +202,12 @@ const DetailedItineraryView = ({
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
                 placeholder="E.g., What are vegetarian food options? Can we add yoga on Day 2?"
                 className="flex-1 px-4 py-3 border-0 focus:outline-none text-text-primary bg-transparent"
                 disabled={isLoadingChat}
@@ -174,23 +222,6 @@ const DetailedItineraryView = ({
                 <Send className="w-4 h-4" aria-hidden="true" />
                 <span className="hidden sm:inline">Send</span>
               </button>
-            </div>
-          </div>
-
-          {/* Suggested Questions */}
-          <div className="mt-5">
-            <p className="text-sm text-text-secondary mb-3 font-medium">Quick questions to get started:</p>
-            <div className="flex flex-wrap gap-2">
-              {suggestedQuestions.map((question, index) => (
-                <button
-                  key={index}
-                  onClick={() => setChatInput(question)}
-                  className="px-4 py-2 text-sm border-2 border-neutral-light rounded-full hover:bg-primary/5 hover:border-primary transition-colors text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  aria-label={`Ask: ${question}`}
-                >
-                  {question}
-                </button>
-              ))}
             </div>
           </div>
         </div>

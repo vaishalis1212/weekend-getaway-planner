@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, X } from 'lucide-react'
 import VibeSelection from './VibeSelection'
 import DepartureCity from './DepartureCity'
 import BudgetSlider from './BudgetSlider'
 import DateRangePicker from './DateRangePicker'
 import InterestTags from './InterestTags'
 
-function PreferenceWizard({ onComplete }) {
+function PreferenceWizard({ onComplete, onClose }) {
   const [wizardData, setWizardData] = useState({
     currentStep: 1,
     selectedVibe: null,
@@ -117,8 +117,19 @@ function PreferenceWizard({ onComplete }) {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" role="dialog" aria-labelledby="wizard-title">
       <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-4xl h-[700px] flex flex-col animate-fadeIn border-2 border-neutral-light overflow-hidden">
         {/* Header */}
-        <div className="bg-warm-gradient p-6 text-white flex-shrink-0 rounded-t-2xl">
-          <h2 id="wizard-title" className="text-3xl font-bold mb-2">Plan Your Perfect Getaway</h2>
+        <div className="bg-warm-gradient p-6 text-white flex-shrink-0 rounded-t-2xl relative">
+          {/* Close Button */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-transparent"
+              aria-label="Close wizard and return to hero page"
+            >
+              <X size={24} aria-hidden="true" />
+            </button>
+          )}
+
+          <h2 id="wizard-title" className="text-3xl font-bold mb-2 pr-12">Plan Your Perfect Getaway</h2>
           <p className="text-white/95">Tell us your preferences and we'll create the ideal itinerary</p>
 
           {/* Progress Bar */}
