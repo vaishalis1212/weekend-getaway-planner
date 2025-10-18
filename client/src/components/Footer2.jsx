@@ -14,7 +14,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-3xl">✈️</span>
-              <span className="text-xl font-heading font-bold">Weekend Escape</span>
+              <span className="text-xl font-heading font-bold">Manzil</span>
             </div>
             <p className="text-neutral">
               Plan your perfect couple's getaway in minutes
@@ -27,7 +27,7 @@ export default function Footer() {
             <ul className="space-y-2 text-neutral">
               <li><button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="hover:text-surface transition">About Us</button></li>
               <li><button onClick={() => scrollToSection('how-it-works')} className="hover:text-surface transition">How It Works</button></li>
-              <li><button onClick={() => scrollToSection('destinations')} className="hover:text-surface transition">Destinations</button></li>
+              <li><button onClick={() => scrollToSection('destinations')} className="hover:text-surface transition">Why Choose Us</button></li>
               <li><button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="hover:text-surface transition">Contact</button></li>
             </ul>
           </div>
@@ -61,7 +61,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-neutral pt-8 text-center text-neutral">
-          <p>© 2025 Weekend Escape Planner. Made with ❤️ for couples who love to travel.</p>
+          <p>© 2025 Manzil. Made with ❤️ for couples who love to travel.</p>
         </div>
       </div>
     </footer>
