@@ -38,7 +38,7 @@ export default function FeaturesGrid() {
     <div className="py-20 bg-background">
       <div className="max-w-6xl mx-auto px-4">
         <h2 className="text-4xl font-heading font-bold text-center mb-4 text-text-primary">
-          Why Choose Weekend Escape?
+          Why Choose Manzil?
         </h2>
         <p className="text-center text-text-secondary mb-16 text-lg">
           Planning made simple, trips made memorable
