@@ -67,7 +67,7 @@ function PreferenceWizard({ onComplete, onClose }) {
         return wizardData.startDate && wizardData.endDate &&
                new Date(wizardData.endDate) > new Date(wizardData.startDate)
       case 5:
-        return wizardData.interests.length > 0 // Interests are now mandatory
+        return true // Interests are optional - always valid
       default:
         return false
     }

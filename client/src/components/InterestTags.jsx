@@ -27,10 +27,10 @@ function InterestTags({ data, updateData }) {
     <div className="space-y-6">
       <div className="text-center">
         <h3 className="text-2xl font-bold text-primary mb-2">
-          What interests you?
+          What interests you? <span className="text-lg text-text-secondary font-normal">(Optional)</span>
         </h3>
         <p className="text-secondary">
-          Select all that apply (optional)
+          Select all that apply or skip to continue
         </p>
       </div>
 
