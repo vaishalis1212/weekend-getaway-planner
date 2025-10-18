@@ -40,7 +40,7 @@ function Hero2Demo() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2 cursor-pointer" onClick={() => window.location.reload()}>
               <span className="text-2xl">🌅</span>
-              <span className="text-xl font-bold text-text-primary">Weekend Escape</span>
+              <span className="text-xl font-bold text-text-primary">Manzil</span>
             </div>
             <div className="hidden md:flex space-x-8">
               <button onClick={() => scrollToSection('destinations')} className="text-text-secondary hover:text-primary transition-colors duration-300">

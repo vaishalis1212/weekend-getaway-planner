@@ -1,7 +1,7 @@
 {
-  "name": "weekend-getaway-server",
+  "name": "manzil-server",
   "version": "1.0.0",
-  "description": "Backend for Weekend Getaway Planner",
+  "description": "Backend for Manzil Travel Planner",
   "main": "index.js",
   "type": "module",
   "scripts": {

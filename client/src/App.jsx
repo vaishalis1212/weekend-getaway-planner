@@ -9,7 +9,7 @@ function App() {
           {/* Title with Icon */}
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center justify-center gap-2">
             <span className="text-3xl" role="img" aria-label="sunset">🌅</span>
-            Your Perfect Weekend Escape Awaits
+            Your Perfect Escape Awaits with Manzil
           </h1>
 
           {/* Features */}

@@ -48,7 +48,7 @@ const Hero = ({ scrollToPlanner }) => {
           {/* Main Heading */}
           <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight drop-shadow-2xl">
             Plan Your Perfect<br />
-            <span className="text-accent-light">Weekend Escape</span><br />
+            <span className="text-accent-light">Getaway</span><br />
             <span className="text-white">in 5 Minutes</span>
           </h1>
           
