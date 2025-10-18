@@ -4,6 +4,24 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, Ta
 import { saveAs } from 'file-saver';
 
 /**
+ * Remove or replace emojis and special characters that jsPDF can't handle
+ */
+function cleanTextForPDF(text) {
+  if (!text) return '';
+
+  // Remove emojis and special Unicode characters
+  // Keep only basic Latin characters, numbers, and common punctuation
+  return text
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Remove emojis
+    .replace(/[\u{2600}-\u{26FF}]/gu, '') // Remove misc symbols
+    .replace(/[\u{2700}-\u{27BF}]/gu, '') // Remove dingbats
+    .replace(/[\u{FE00}-\u{FE0F}]/gu, '') // Remove variation selectors
+    .replace(/[\u{1F900}-\u{1F9FF}]/gu, '') // Remove supplemental symbols
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+}
+
+/**
  * Parse markdown content to extract structured data including tables
  */
 function parseMarkdownContent(markdownContent) {
@@ -129,7 +147,7 @@ export async function exportToPDF(itineraryContent, destination, userPreferences
           doc.setFontSize(14);
           doc.setFont(undefined, 'bold');
           doc.setTextColor(79, 70, 229); // Secondary color
-          doc.text(element.text, margin, yPosition);
+          doc.text(cleanTextForPDF(element.text), margin, yPosition);
           yPosition += 8;
           doc.setFont(undefined, 'normal');
           doc.setFontSize(10);
@@ -139,7 +157,7 @@ export async function exportToPDF(itineraryContent, destination, userPreferences
         case 'subheading':
           doc.setFontSize(12);
           doc.setFont(undefined, 'bold');
-          doc.text(element.text, margin, yPosition);
+          doc.text(cleanTextForPDF(element.text), margin, yPosition);
           yPosition += 7;
           doc.setFont(undefined, 'normal');
           doc.setFontSize(10);
@@ -147,7 +165,7 @@ export async function exportToPDF(itineraryContent, destination, userPreferences
 
         case 'text':
           const maxWidth = pageWidth - (margin * 2);
-          const splitText = doc.splitTextToSize(element.text, maxWidth);
+          const splitText = doc.splitTextToSize(cleanTextForPDF(element.text), maxWidth);
 
           splitText.forEach(line => {
             if (yPosition > 280) {
@@ -184,7 +202,7 @@ export async function exportToPDF(itineraryContent, destination, userPreferences
           xPos = margin;
           tableData.headers.forEach((header, i) => {
             doc.rect(xPos, yPosition, colWidths[i], rowHeight, 'F');
-            doc.text(header, xPos + cellPadding, yPosition + 5.5);
+            doc.text(cleanTextForPDF(header), xPos + cellPadding, yPosition + 5.5);
             xPos += colWidths[i];
           });
           yPosition += rowHeight;
@@ -212,8 +230,9 @@ export async function exportToPDF(itineraryContent, destination, userPreferences
               doc.rect(xPos, yPosition, colWidths[i], rowHeight);
 
               // Draw text (truncate if too long)
+              const cleanedCell = cleanTextForPDF(cell);
               const maxChars = Math.floor(colWidths[i] / 1.5);
-              const cellText = cell.length > maxChars ? cell.substring(0, maxChars - 2) + '..' : cell;
+              const cellText = cleanedCell.length > maxChars ? cleanedCell.substring(0, maxChars - 2) + '..' : cleanedCell;
               doc.text(cellText, xPos + cellPadding, yPosition + 5.5);
               xPos += colWidths[i];
             });
