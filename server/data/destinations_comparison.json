@@ -83,10 +83,10 @@
         ],
         "budget": "₹30,000 for 2 days",
         "travelTime": {
-          "Mumbai": "24 hours (flight to Chennai + 3hr drive)",
-          "Delhi": "26 hours (flight to Chennai + 3hr drive)",
+          "Mumbai": "5 hours (2hr flight to Chennai + 3hr drive)",
+          "Delhi": "6 hours (3hr flight to Chennai + 3hr drive)",
           "Bangalore": "5 hours (road)",
-          "Pune": "20 hours (train to Chennai + drive)",
+          "Pune": "6 hours (2hr flight to Chennai + 3hr drive)",
           "Hyderabad": "10 hours (road or train)",
           "Chennai": "3 hours (road)"
         },
