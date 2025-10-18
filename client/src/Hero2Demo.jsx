@@ -44,7 +44,7 @@ function Hero2Demo() {
             </div>
             <div className="hidden md:flex space-x-8">
               <button onClick={() => scrollToSection('destinations')} className="text-text-secondary hover:text-primary transition-colors duration-300">
-                Why Choose Us?
+                Why Choose Us
               </button>
               <button onClick={() => scrollToSection('how-it-works')} className="text-text-secondary hover:text-primary transition-colors duration-300">
                 How It Works
